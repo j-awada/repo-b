@@ -22,7 +22,7 @@ jobs:
       
       - name: Update JSON File
         run: |
-          jq --arg new_tag "$TAG_NAME" map(if .fields.chart | contains("$APP_REPO:") then .fields.chart |= sub(":[^:]+$"; ":" + $new_tag) else . end)' $JSON_FILE_PATH > tmp.json
+          jq --arg new_tag "$TAG_NAME" 'map(if .fields.chart | contains("$APP_REPO:") then .fields.chart |= sub(":[^:]+$"; ":" + $new_tag) else . end)' $JSON_FILE_PATH > tmp.json
           mv tmp.json $JSON_FILE_PATH
       
       - name: Commit Changes
