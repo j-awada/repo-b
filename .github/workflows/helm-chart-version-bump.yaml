@@ -29,7 +29,7 @@
 #      - name: Update apps_fixtures.json
 #        run: |
 #          cd repo-a
-#          sed -i 's/^chart: ghcr.io/scilifelabdatacentre/serve-charts/APP_NAME:version:.*/version: NEW_VERSION/' fixtures/apps_fixtures.json
+#          #sed -i 's/^chart: ghcr.io/scilifelabdatacentre/serve-charts/APP_NAME:version:.*/version: NEW_VERSION/' fixtures#/apps_fixtures.json
 #          git add fixtures/apps_fixtures.json
 #          git commit -m "Update Helm chart version"
 #          git push origin $BRANCH_NAME

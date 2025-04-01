@@ -1,0 +1,46 @@
+name: New Chart Version
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        required: true
+      app_repo:
+        required: true
+
+jobs:
+  update-json:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set Environment Variables
+        run: |
+          echo "APP_REPO=${{ github.event.inputs.app_repo }}" >> $GITHUB_ENV
+          echo "TAG_NAME=${{ github.event.inputs.tag_name }}" >> $GITHUB_ENV
+          echo "JSON_FILE_PATH=repo-a/fixtures/apps_fixtures.json" >> $GITHUB_ENV
+      
+      - uses: actions/checkout@v2
+      
+      - name: Update JSON File
+        run: |
+          jq --arg new_tag "$TAG_NAME" map(if .fields.chart | contains("$APP_REPO:") then .fields.chart |= sub(":[^:]+$"; ":" + $new_tag) else . end)' $JSON_FILE_PATH > tmp.json
+          mv tmp.json $JSON_FILE_PATH
+      
+      - name: Commit Changes
+        run: |
+          git config user.name "${{ github.actor }}"
+          git config user.email "${{ github.actor }}@users.noreply.github.com"
+          git add $JSON_FILE_PATH
+          git diff --quiet || git commit -m "Update chart version in ${{ env.APP_REPO }} to ${{ env.TAG_NAME }}"
+      
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v3
+        with:
+          token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+          commit-message: "Update JSON configuration"
+          committer: GitHub <noreply@github.com>
+          author: ${{ github.actor }} <${{ github.actor }}@users.noreply.github.com>
+          branch: update/${{ env.APP_REPO }}-${{ env.TAG_NAME }}
+          title: 'Update chart version in ${{ env.APP_REPO }} to ${{ env.TAG_NAME }}'
+          body: |
+            This PR updates the `chart` field in `fixtures.json` to use the new version: `${{ env.TAG_NAME }}`.
+            Please review and merge if everything looks good.
