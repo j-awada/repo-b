@@ -12,6 +12,16 @@ jobs:
   update-json:
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout repo-b (current repository)
+        uses: actions/checkout@v2
+      
+      - name: Checkout repo-a (external repository)
+        uses: actions/checkout@v2
+        with:
+          repository: j-awada/repo-a
+          path: repo-a
+          token: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Set Environment Variables
         run: |
           echo "APP_REPO=${{ github.event.inputs.app_repo }}" >> $GITHUB_ENV
@@ -27,15 +37,16 @@ jobs:
       
       - name: Commit Changes
         run: |
+          cd repo-a
           git config user.name "${{ github.actor }}"
           git config user.email "${{ github.actor }}@users.noreply.github.com"
-          git add $JSON_FILE_PATH
+          git add fixtures/apps_fixtures.json
           git diff --quiet || git commit -m "Update chart version in ${{ env.APP_REPO }} to ${{ env.TAG_NAME }}"
       
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v3
         with:
-          token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }}
           commit-message: "Update JSON configuration"
           committer: GitHub <noreply@github.com>
           author: ${{ github.actor }} <${{ github.actor }}@users.noreply.github.com>
