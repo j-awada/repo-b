@@ -22,14 +22,14 @@ jobs:
       
       - name: Update JSON File
         run: |
-          git clone https://github.com/j-awada/repo-a.git
-          cd repo-a
           git config user.name "$GITHUB_ACTOR"
           git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
-          jq --arg new_tag "$TAG_NAME" 'map(if .fields.chart | contains("$APP_REPO:") then .fields.chart |= sub(":[^:]+$"; ":" + $new_tag) else . end)' $JSON_FILE_PATH > tmp.json
+          git clone https://github.com/j-awada/repo-a.git
+          cd repo-a
+          jq --arg new_tag "$TAG_NAME" 'map(if .fields.chart | contains("${{ env.APP_REPO }}:") then .fields.chart |= sub(":[^:]+$"; ":" + $new_tag) else . end)' $JSON_FILE_PATH > tmp.json
           mv tmp.json $JSON_FILE_PATH
           git add fixtures/apps_fixtures.json
-          git diff --quiet || git commit -m "Update chart version in ${{ $APP_REPO }} to ${{ $TAG_NAME }}"
+          git diff --quiet || git commit -m "Update chart version in ${{ env.APP_REPO }} to ${{ env.TAG_NAME }}"
       
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v3
@@ -38,8 +38,8 @@ jobs:
           commit-message: "Update JSON configuration"
           committer: GitHub <noreply@github.com>
           author: ${{ github.actor }} <${{ github.actor }}@users.noreply.github.com>
-          branch: update/${{ $APP_REPO }}-${{ $TAG_NAME }}
-          title: 'Update chart version in ${{ $APP_REPO }} to ${{ $TAG_NAME }}'
+          branch: update/${{ env.APP_REPO }}-${{ env.TAG_NAME }}
+          title: 'Update chart version in ${{ env.APP_REPO }} to ${{ env.TAG_NAME }}'
           body: |
-            This PR updates the `chart` field in `fixtures.json` to use the new version: `${{ $TAG_NAME }}`.
+            This PR updates the `chart` field in `fixtures.json` to use the new version: `${{ env.TAG_NAME }}`.
             Please review and merge if everything looks good.
