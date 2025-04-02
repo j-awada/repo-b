@@ -25,8 +25,8 @@ jobs:
 
       - name: Clone Target Repository
         run: |
-          git config user.name "$GITHUB_ACTOR"
-          git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
+          git config --global user.name "$GITHUB_ACTOR"
+          git config --global user.email "$GITHUB_ACTOR@users.noreply.github.com"
           git clone https://github.com/j-awada/repo-a.git
           cd repo-a
 
@@ -41,7 +41,7 @@ jobs:
       - name: Push Changes
         run: |
           cd repo-a
-          git push origin HEAD
+          git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/j-awada/repo-a.git HEAD
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
