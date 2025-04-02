@@ -18,19 +18,33 @@ jobs:
           echo "TAG_NAME=${{ github.event.inputs.tag_name }}" >> $GITHUB_ENV
           echo "JSON_FILE_PATH=fixtures/apps_fixtures.json" >> $GITHUB_ENV
       
-      - uses: actions/checkout@v2
-      
-      - name: Update JSON File
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Clone Target Repository
         run: |
           git config user.name "$GITHUB_ACTOR"
           git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
           git clone https://github.com/j-awada/repo-a.git
           cd repo-a
+
+      - name: Update JSON File
+        run: |
+          cd repo-a
           jq --arg new_tag "$TAG_NAME" 'map(if .fields.chart | contains("${{ env.APP_REPO }}:") then .fields.chart |= sub(":[^:]+$"; ":" + $new_tag) else . end)' $JSON_FILE_PATH > tmp.json
           mv tmp.json $JSON_FILE_PATH
-          git add fixtures/apps_fixtures.json
+          git add $JSON_FILE_PATH
           git diff --quiet || git commit -m "Update chart version in ${{ env.APP_REPO }} to ${{ env.TAG_NAME }}"
       
+      - name: Push Changes
+        run: |
+          cd repo-a
+          git push origin HEAD
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v3
         with:
