@@ -43,3 +43,4 @@ jobs:
           body: |
             This PR updates the `chart` field in `fixtures.json` to use the new version: `${{ env.TAG_NAME }}`.
             Please review and merge if everything looks good.
+          path: repo-a
