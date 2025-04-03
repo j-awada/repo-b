@@ -17,17 +17,24 @@ jobs:
           echo "APP_REPO=${{ github.event.inputs.app_repo }}" >> $GITHUB_ENV
           echo "TAG_NAME=${{ github.event.inputs.tag_name }}" >> $GITHUB_ENV
           echo "JSON_FILE_PATH=fixtures/apps_fixtures.json" >> $GITHUB_ENV
-      
+
       - name: Checkout Repository
         uses: actions/checkout@v3
         with:
           token: ${{ secrets.MY_PAT }}
 
+      - name: Setup SSH Key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan github.com >> ~/.ssh/known_hosts
+
       - name: Clone Target Repository
         run: |
           git config --global user.name "$GITHUB_ACTOR"
           git config --global user.email "$GITHUB_ACTOR@users.noreply.github.com"
-          git clone https://github.com/j-awada/repo-a.git
+          git clone git@github.com:j-awada/repo-a.git
           cd repo-a
 
       - name: Update JSON File
@@ -41,7 +48,7 @@ jobs:
       - name: Push Changes
         run: |
           cd repo-a
-          git push https://x-access-token:${{ secrets.MY_PAT }}@github.com/j-awada/repo-a.git HEAD
+          git push origin HEAD
         env:
           GITHUB_TOKEN: ${{ secrets.MY_PAT }}
 
