@@ -21,7 +21,7 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v3
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.MY_PAT }}
 
       - name: Clone Target Repository
         run: |
@@ -41,14 +41,14 @@ jobs:
       - name: Push Changes
         run: |
           cd repo-a
-          git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/j-awada/repo-a.git HEAD
+          git push https://x-access-token:${{ secrets.MY_PAT }}@github.com/j-awada/repo-a.git HEAD
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.MY_PAT }}
 
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v3
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.MY_PAT }}
           commit-message: "Update JSON configuration"
           committer: GitHub <noreply@github.com>
           author: ${{ github.actor }} <${{ github.actor }}@users.noreply.github.com>
