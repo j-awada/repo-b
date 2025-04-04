@@ -1,12 +1,8 @@
 name: New Chart Version
 
 on:
-  push:
-    paths:
-      - "apps/rstudio/Chart.yaml"
-  pull_request:
-    paths:
-      - "apps/rstudio/Chart.yaml"
+  package:
+    types: [published]
 
 jobs:
   update-json:
@@ -19,10 +15,13 @@ jobs:
 
       - name: Set Environment Variables
         run: |
-          HELM_CHART=rstudio
-          echo "HELM_CHART=$HELM_CHART" >> "$GITHUB_ENV"
-          NEW_CHART_VERSION=$(yq e '.version' apps/rstudio/Chart.yaml)
-          echo "NEW_CHART_VERSION=$NEW_CHART_VERSION" >> $GITHUB_ENV
+          # Extract package name and version from the event payload
+          PACKAGE_NAME="${{ github.event.package.name }}"
+          PACKAGE_VERSION="${{ github.event.package.package_version }}"
+          
+          # Set environment variables
+          echo "HELM_CHART=$PACKAGE_NAME" >> "$GITHUB_ENV"
+          echo "NEW_CHART_VERSION=$PACKAGE_VERSION" >> $GITHUB_ENV
           echo "JSON_FILE_PATH=fixtures/apps_fixtures.json" >> $GITHUB_ENV
 
       - name: Setup SSH Key
