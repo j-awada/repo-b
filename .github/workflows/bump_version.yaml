@@ -54,7 +54,6 @@ jobs:
         uses: peter-evans/create-pull-request@v3
         with:
           token: ${{ secrets.MY_PAT }}
-          token: ${{ secrets.MY_PAT }}
           commit-message: "Update JSON configuration"
           committer: GitHub <noreply@github.com>
           author: ${{ github.actor }} <${{ github.actor }}@users.noreply.github.com>
