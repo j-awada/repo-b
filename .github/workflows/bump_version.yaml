@@ -64,7 +64,7 @@ jobs:
           token: ${{ secrets.MY_PAT }}
           commit-message: "Update JSON configuration"
           committer: GitHub <noreply@github.com>
-          author: ${{ github.actor }} <${{ github.actor }}@users.noreply.github.com>
+          author: ${{ github.actor }} <jana.awada@scilifelab.uu.se>
           branch: update/${{ env.HELM_CHART }}-${{ env.NEW_CHART_VERSION }}
           title: 'Update chart version in ${{ env.HELM_CHART }} to ${{ env.NEW_CHART_VERSION }}'
           body: |
