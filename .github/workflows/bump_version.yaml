@@ -35,6 +35,14 @@ jobs:
           git config --global user.email "$GITHUB_ACTOR@users.noreply.github.com"
           git clone git@github.com:j-awada/repo-a.git
 
+      - name: Import GPG key and configure commit signing
+        run: |
+          echo "${{ secrets.GPG_PRIVATE_KEY }}" | gpg --batch --import
+          git config --global user.signingkey "$(gpg --list-keys --with-colons | grep pub | cut -d':' -f10)"
+          git config --global commit.gpgsign true
+        env:
+          GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
+
       - name: Update JSON File
         run: |
           cd repo-a
