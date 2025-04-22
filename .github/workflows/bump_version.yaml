@@ -32,7 +32,7 @@ jobs:
       - name: Clone Target Repository
         run: |
           git config --global user.name "$GITHUB_ACTOR"
-          git config --global user.email "$GITHUB_ACTOR@users.noreply.github.com"
+          git config --global user.email "jana.awada@scilifelab.uu.se"
           git clone git@github.com:j-awada/repo-a.git
 
       - name: Import GPG key and configure commit signing
