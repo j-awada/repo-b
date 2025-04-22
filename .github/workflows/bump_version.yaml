@@ -38,7 +38,7 @@ jobs:
       - name: Import GPG key and configure commit signing
         run: |
           echo "${{ secrets.GPG_PRIVATE_KEY }}" | gpg --batch --import
-          git config --global user.signingkey "$(gpg --list-keys --with-colons | grep pub | cut -d':' -f10)"
+          git config --global user.signingkey "${{ secrets.GPG_KEY_ID }}"
           git config --global commit.gpgsign true
         env:
           GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
