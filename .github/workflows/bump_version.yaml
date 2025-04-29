@@ -3,22 +3,31 @@ name: New Chart Version
 on:
   pull_request:
     paths:
-      - "apps/rstudio/Chart.yaml"
+      - "apps/**/Chart.yaml"
 
 jobs:
   update-json:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        app:
+          - name: rstudio
+            helm_name: rstudio
+          - name: jupyter-lab
+            helm_name: lab
+
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           token: ${{ secrets.MY_PAT }}
 
       - name: Set Environment Variables
         run: |
-          HELM_CHART=rstudio
+          HELM_CHART=${{ matrix.app.helm_name }}
           echo "HELM_CHART=$HELM_CHART" >> "$GITHUB_ENV"
-          NEW_CHART_VERSION=$(yq e '.version' apps/rstudio/Chart.yaml)
+          CHART_PATH=apps/${{ matrix.app.name }}/Chart.yaml
+          NEW_CHART_VERSION=$(yq e '.version' $CHART_PATH)
           echo "NEW_CHART_VERSION=$NEW_CHART_VERSION" >> $GITHUB_ENV
           echo "JSON_FILE_PATH=fixtures/apps_fixtures.json" >> $GITHUB_ENV
 
@@ -32,8 +41,16 @@ jobs:
       - name: Clone Target Repository
         run: |
           git config --global user.name "$GITHUB_ACTOR"
-          git config --global user.email "$GITHUB_ACTOR@users.noreply.github.com"
+          git config --global user.email "jana.awada@scilifelab.uu.se"
           git clone git@github.com:j-awada/repo-a.git
+
+      - name: Import GPG key and configure commit signing
+        run: |
+          echo "${{ secrets.GPG_PRIVATE_KEY }}" | gpg --batch --import
+          git config --global user.signingkey "${{ secrets.GPG_KEY_ID }}"
+          git config --global commit.gpgsign true
+        env:
+          GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
 
       - name: Update JSON File
         run: |
@@ -41,7 +58,7 @@ jobs:
           jq -M --arg new_chart_version "$NEW_CHART_VERSION" 'map(if .fields.chart | contains("${{ env.HELM_CHART }}:") then .fields.chart |= sub(":[^:]+$"; ":" + $new_chart_version) else . end)' $JSON_FILE_PATH > tmp.json
           mv tmp.json $JSON_FILE_PATH
           git add $JSON_FILE_PATH
-          git diff --quiet || git commit -m "Update chart version in ${{ env.HELM_CHART }} to ${{ env.NEW_CHART_VERSION }}"
+          git diff --quiet || git commit -S -m "Update chart version in ${{ env.HELM_CHART }} to ${{ env.NEW_CHART_VERSION }}"
       
       - name: Push Changes
         run: |
@@ -55,10 +72,10 @@ jobs:
         with:
           token: ${{ secrets.MY_PAT }}
           commit-message: "Update JSON configuration"
-          committer: GitHub <noreply@github.com>
-          author: ${{ github.actor }} <${{ github.actor }}@users.noreply.github.com>
+          committer: ${{ github.actor }} <jana.awada@scilifelab.uu.se>
+          author: ${{ github.actor }} <jana.awada@scilifelab.uu.se>
           branch: update/${{ env.HELM_CHART }}-${{ env.NEW_CHART_VERSION }}
-          title: 'Update chart version in ${{ env.HELM_CHART }} to ${{ env.NEW_CHART_VERSION }}'
+          title: '[Automated PR] Update chart version in ${{ env.HELM_CHART }} to ${{ env.NEW_CHART_VERSION }}'
           body: |
             This PR updates the `chart` field in `fixtures.json` to use the new version: `${{ env.NEW_CHART_VERSION }}`.
             Please review and merge if everything looks good.
